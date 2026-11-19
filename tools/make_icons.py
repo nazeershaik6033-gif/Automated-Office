@@ -1,32 +1,43 @@
-"""Draws the Noting Desk app icons (navy tile, 'ND' monogram, gold underline)."""
-import sys
-from PIL import Image, ImageDraw, ImageFont
-out = sys.argv[1]
-FONT = '/usr/share/fonts/opentype/inter/Inter-ExtraBold.otf'
-def icon(size, pad_ratio=0.0, rounded=True):
+"""Builds the EPFO Desk icons from src/brand/logo_source.png:
+black background removed, logo centred on a light-blue rounded tile."""
+import sys, pathlib
+from PIL import Image, ImageDraw, ImageFilter
+R = pathlib.Path(__file__).resolve().parent.parent
+src = Image.open(R / 'src/brand/logo_source.png').convert('RGBA')
+px = src.load()
+w, h = src.size
+for y in range(h):                      # near-black -> transparent (soft edge)
+    for x in range(w):
+        r, g, b, a = px[x, y]
+        m = max(r, g, b)
+        if m < 18: px[x, y] = (r, g, b, 0)
+        elif m < 45: px[x, y] = (r, g, b, int(255 * (m - 18) / 27))
+logo = src.crop(src.getbbox())
+out = pathlib.Path(sys.argv[1]); out.mkdir(parents=True, exist_ok=True)
+TOP, BOT = (234, 245, 255), (196, 226, 250)
+def tile(size, scale=0.84, rounded=True, shadow=True):
     S = size * 4
-    im = Image.new('RGBA', (S, S), (0, 0, 0, 0))
-    g = Image.new('RGBA', (S, S))
-    gd = ImageDraw.Draw(g)
-    top, bot = (44, 106, 192), (16, 44, 92)
+    bg = Image.new('RGBA', (S, S))
+    d = ImageDraw.Draw(bg)
     for y in range(S):
         t = y / S
-        gd.line([(0, y), (S, y)], fill=tuple(int(top[i] + (bot[i] - top[i]) * t) for i in range(3)) + (255,))
+        d.line([(0, y), (S, y)], fill=tuple(int(TOP[i] + (BOT[i] - TOP[i]) * t) for i in range(3)) + (255,))
     mask = Image.new('L', (S, S), 0)
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, S - 1, S - 1], radius=int(S * .22) if rounded else 0, fill=255)
-    im.paste(g, (0, 0), mask)
-    d = ImageDraw.Draw(im)
-    inner = S * (1 - 2 * pad_ratio)
-    f = ImageFont.truetype(FONT, int(inner * .42))
-    tw = d.textlength('ND', font=f)
-    bb = d.textbbox((0, 0), 'ND', font=f)
-    th = bb[3] - bb[1]
-    x, y = (S - tw) / 2, (S - th) / 2 - bb[1] - inner * .04
-    d.text((x, y), 'ND', font=f, fill=(255, 255, 255, 255))
-    uw, uy = inner * .34, y + bb[3] + inner * .07
-    d.rounded_rectangle([(S - uw) / 2, uy, (S + uw) / 2, uy + inner * .045], radius=int(inner * .02), fill=(240, 190, 70, 255))
+    im = Image.new('RGBA', (S, S), (0, 0, 0, 0)); im.paste(bg, (0, 0), mask)
+    lw = int(S * scale); lh = int(logo.height * lw / logo.width)
+    lg = logo.resize((lw, lh), Image.LANCZOS)
+    x, y = (S - lw) // 2, (S - lh) // 2
+    if shadow:
+        sh = Image.new('RGBA', (S, S), (0, 0, 0, 0))
+        sh.paste((20, 40, 90, 70), (x, y + S // 60), lg.split()[3])
+        im = Image.alpha_composite(im, sh.filter(ImageFilter.GaussianBlur(S // 70)))
+    im.alpha_composite(lg, (x, y))
     return im.resize((size, size), Image.LANCZOS)
-icon(180, rounded=False).convert('RGB').save(f'{out}/apple-touch-icon.png')
-icon(192).save(f'{out}/icon-192.png')
-icon(512).save(f'{out}/icon-512.png')
-icon(512, pad_ratio=.1, rounded=False).save(f'{out}/icon-maskable-512.png')
+tile(180, rounded=False).convert('RGB').save(out / 'apple-touch-icon.png')
+tile(192).save(out / 'icon-192.png')
+tile(512).save(out / 'icon-512.png')
+tile(512, scale=.66, rounded=False).save(out / 'icon-maskable-512.png')
+tile(64).save(out / 'logo-64.png')
+lw = 256; logo.resize((lw, int(logo.height * lw / logo.width)), Image.LANCZOS).save(out / 'logo-plain.png')
+print('icons written to', out)

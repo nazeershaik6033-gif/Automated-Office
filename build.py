@@ -8,7 +8,7 @@
   docs/Noting_Desk.html – same file under the PC name, for direct download
   docs/sw.js, docs/manifest.webmanifest
 """
-import datetime, json, pathlib, re, sys
+import base64, datetime, json, pathlib, re, sys
 R = pathlib.Path(__file__).resolve().parent
 SRC, OUT = R / 'src', R / 'docs'
 ver = sys.argv[1] if len(sys.argv) > 1 else datetime.datetime.now().strftime('%Y.%m.%d-%H%M')
@@ -22,7 +22,7 @@ html = rd('Noting_Desk_base.html')
 assert html.count('</body>') == 1 and html.count('</head>') == 1
 
 head = '''<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#173f7a">
+<meta name="theme-color" content="#eaf5ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
@@ -30,15 +30,20 @@ head = '''<meta name="viewport" content="width=device-width, initial-scale=1, vi
 <meta name="format-detection" content="telephone=no">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" href="icons/icon-192.png">'''
+logo = 'data:image/png;base64,' + base64.b64encode((OUT / 'icons/logo-64.png').read_bytes()).decode()
+head = head.replace('<link rel="icon" type="image/png" href="icons/icon-192.png">', f'<link rel="icon" type="image/png" href="{logo}">')
+head = head.replace('content="Noting Desk"', 'content="EPFO Desk"')
 html, n = re.subn(r'<meta name="viewport"[^>]*>', head, html, count=1)
 assert n == 1, 'viewport tag not found'
+html = html.replace('<title>Noting Desk</title>', '<title>EPFO Desk</title>', 1)
 
 tail = (
-    f'<!-- ======== Noting Desk {ver}: iPhone app layer + sync (built by build.py) ======== -->\n'
+    f'<!-- ======== EPFO Desk {ver}: iPhone app layer + sync (built by build.py) ======== -->\n'
     f'<style id="nd-mobile-css">\n{rd("addon/nd-mobile.css")}</style>\n'
     f'<script id="nd-vendor-qrcode">/* qrcode-generator 1.4.4 · MIT · Kazuhiko Arase */\n{js(rd("vendor/qrcode.js"))}\n</script>\n'
     f'<script id="nd-vendor-jsqr">/* jsQR 1.4.0 · Apache-2.0 · Cosmo Wolfe */\n{js(rd("vendor/jsQR.js"))}\n</script>\n'
-    f'<script id="nd-pwa-js">window.ND_APP_VER={json.dumps(ver)};\n{js(rd("addon/nd-pwa.js"))}</script>\n'
+    f'<script id="nd-pwa-js">window.ND_APP_VER={json.dumps(ver)};window.ND_LOGO={json.dumps(logo)};\n{js(rd("addon/nd-pwa.js"))}</script>\n'
+    f'<script id="nd-members-js">\n{js(rd("addon/nd-members.js"))}</script>\n'
     f'<script id="nd-sync-js">\n{js(rd("addon/nd-sync.js"))}</script>\n'
 )
 html = html.replace('</body>', tail + '</body>')
@@ -48,9 +53,9 @@ OUT.mkdir(exist_ok=True)
 (OUT / 'Noting_Desk.html').write_text(html, encoding='utf-8')
 (OUT / 'sw.js').write_text(rd('sw.template.js').replace('__VER__', ver), encoding='utf-8')
 (OUT / 'manifest.webmanifest').write_text(json.dumps({
-    'name': 'Noting Desk', 'short_name': 'Noting Desk', 'id': './', 'start_url': './', 'scope': './',
-    'display': 'standalone', 'orientation': 'any', 'background_color': '#f3f1ec', 'theme_color': '#173f7a',
-    'description': 'Notings, circulars, office orders, e-mails, work diary and IBB – offline, synced with the office PC.',
+    'name': 'EPFO Desk', 'short_name': 'EPFO Desk', 'id': './', 'start_url': './', 'scope': './',
+    'display': 'standalone', 'orientation': 'any', 'background_color': '#eaf5ff', 'theme_color': '#6f86c9',
+    'description': 'Member search across your Excel sheets, notings, circulars, office orders, e-mails, work diary and IBB – offline, synced with the office PC.',
     'icons': [
         {'src': 'icons/icon-192.png', 'sizes': '192x192', 'type': 'image/png'},
         {'src': 'icons/icon-512.png', 'sizes': '512x512', 'type': 'image/png'},

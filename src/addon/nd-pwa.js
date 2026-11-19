@@ -28,7 +28,7 @@ if(WEB){
   try{navigator.storage&&navigator.storage.persist&&navigator.storage.persist()}catch(e){}
 }
 function updBar(w){let b=q('#ndUpd');if(b)return;b=document.createElement('div');b.id='ndUpd';b.className='nd-bar';
-  b.innerHTML='<span>✨ A new version of Noting Desk is ready.</span><button class="btn pri" type="button">Update now</button><button class="btn" type="button" aria-label="Later">Later</button>';
+  b.innerHTML='<span>✨ A new version of EPFO Desk is ready.</span><button class="btn pri" type="button">Update now</button><button class="btn" type="button" aria-label="Later">Later</button>';
   document.body.appendChild(b);const[u,l]=qa('button',b);u.onclick=()=>{u.disabled=true;w.postMessage('skip')};l.onclick=()=>b.remove()}
 
 /* ---------------- saving files on the iPhone ---------------- */
@@ -56,8 +56,8 @@ if(WEB)document.addEventListener('click',e=>{const b=e.target.closest&&e.target.
   say('PoHW Desk is a separate file on the office PC – its cases still travel in the sync file')},true);
 
 /* ---------------- phone bottom bar: main tabs + More ---------------- */
-const PRI=['mNote','mMail','mLib','mDiary'];
-const LAB={mNote:'Draft',mLib:'Circulars',mOrd:'Orders',mMail:'E-mails',mAuto:'Automate',mIbb:'IBB',mHist:'History',mDiary:'Diary',mSport:'Sports',mTools:'Tools',btnLearn:'Learned',btnTeach:'Teach',btnSet:'Settings',mSync:'Sync',mPohw:'PoHW'};
+const PRI=['mNote','mMem','mMail','mLib','mDiary'];
+const LAB={mNote:'Draft',mMem:'Members',mLib:'Circulars',mOrd:'Orders',mMail:'E-mails',mAuto:'Automate',mIbb:'IBB',mHist:'History',mDiary:'Diary',mSport:'Sports',mTools:'Tools',btnLearn:'Learned',btnTeach:'Teach',btnSet:'Settings',mSync:'Sync',mPohw:'PoHW'};
 function navBuild(){const rail=q('#rail');if(!rail)return;
   PRI.forEach(id=>{const b=q('#'+id);if(b)b.classList.add('ndm-pri')});
   let more=q('#ndMore');if(!more){more=document.createElement('button');more.id='ndMore';more.type='button';more.className='ndm-pri';more.title='All tools';more.innerHTML='<i>☰</i><span>More</span>';more.onclick=moreOpen;rail.appendChild(more)}
@@ -67,17 +67,21 @@ function moreOpen(){let m=q('#ndMoreS');if(!m){m=document.createElement('div');m
   const btns=qa('#rail button').filter(b=>LAB[b.id]&&b.style.display!=='none'&&!(WEB&&b.id==='mPohw'));
   m.innerHTML=`<div class="nd-sheet"><div class="nd-grab"></div><h3>All tools</h3><div class="nd-tiles">${btns.map(b=>{const i=q('i',b),c=q('.d6c',b);
       return`<button type="button" class="nd-tile${b.classList.contains('on')?' on':''}" data-id="${b.id}"><i>${i?i.textContent:'•'}</i><span>${LAB[b.id]||((q('span',b)||{}).textContent||b.id)}</span>${c&&c.textContent?`<em>${c.textContent}</em>`:''}</button>`}).join('')}</div>
-    <p class="hint">Noting Desk ${window.ND_APP_VER||''} · works offline</p></div>`;
+    <p class="hint">EPFO Desk ${window.ND_APP_VER||''} · works offline</p></div>`;
   qa('.nd-tile',m).forEach(t=>t.onclick=()=>{m.classList.remove('on');const b=q('#'+t.dataset.id);if(b)b.click();setTimeout(navMark,50)});
   m.classList.add('on')}
 
 /* ---------------- "install this app" hint in Safari ---------------- */
 function installHint(){if(!(IOS&&WEB)||SA())return;try{if(localStorage.getItem('nd_inst_hide'))return}catch(e){}
   const b=document.createElement('div');b.id='ndInst';b.className='nd-bar';
-  b.innerHTML='<span>📲 Install Noting Desk: tap <b>Share</b> <span aria-hidden="true">⬆︎</span> then <b>Add to Home Screen</b>. It then works offline.</span><button class="btn" type="button">OK</button>';
+  b.innerHTML='<span>📲 Install EPFO Desk: tap <b>Share</b> <span aria-hidden="true">⬆︎</span> then <b>Add to Home Screen</b>. It then works offline.</span><button class="btn" type="button">OK</button>';
   document.body.appendChild(b);q('button',b).onclick=()=>{b.remove();try{localStorage.setItem('nd_inst_hide','1')}catch(e){}}}
 
-function boot(){if(SA())document.body.classList.add('nd-standalone');if(WEB)document.body.classList.add('nd-web');
+/* ---------------- brand: EPFO Desk + logo ---------------- */
+function brand(){const lg=q('#rail .logo');if(lg&&!q('img',lg)&&window.ND_LOGO){lg.innerHTML=`<img src="${window.ND_LOGO}" alt="EPFO Desk">`;lg.title='EPFO Desk'}
+  const nm=q('#rail .d6nm');if(nm&&!/EPFO Desk/.test(nm.textContent))nm.innerHTML='EPFO Desk<small>offline · synced</small>';
+  if(document.title!=='EPFO Desk')document.title='EPFO Desk'}
+function boot(){brand();setTimeout(brand,800);setTimeout(brand,2500);if(SA())document.body.classList.add('nd-standalone');if(WEB)document.body.classList.add('nd-web');
   navBuild();setTimeout(navBuild,1500);   /* the dock is rebuilt once the app has loaded */
   try{const mo=new MutationObserver(navMark);mo.observe(q('#rail'),{subtree:true,attributes:true,attributeFilter:['class']})}catch(e){}
   setTimeout(installHint,2500)}

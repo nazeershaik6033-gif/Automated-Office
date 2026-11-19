@@ -1,14 +1,14 @@
 {
- "name": "Noting Desk",
- "short_name": "Noting Desk",
+ "name": "EPFO Desk",
+ "short_name": "EPFO Desk",
  "id": "./",
  "start_url": "./",
  "scope": "./",
  "display": "standalone",
  "orientation": "any",
- "background_color": "#f3f1ec",
- "theme_color": "#173f7a",
- "description": "Notings, circulars, office orders, e-mails, work diary and IBB \u2013 offline, synced with the office PC.",
+ "background_color": "#eaf5ff",
+ "theme_color": "#6f86c9",
+ "description": "Member search across your Excel sheets, notings, circulars, office orders, e-mails, work diary and IBB \u2013 offline, synced with the office PC.",
  "icons": [
   {
    "src": "icons/icon-192.png",

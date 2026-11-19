@@ -44,24 +44,24 @@ async function build(opt){opt=opt||{};const since=+opt.since||0,withPdf=!!opt.pd
   const seen=dyStamp();const diary=(typeof DY!=='undefined'&&DY)?{rows:(DY.rows||[]).filter(r=>!since||(seen[r.id]||0)>since),rj:DY.rj||[],auto:DY.auto}:null;
   const ovr=Object.values(CS.ovr||{}).filter(o=>!since||(o.mod||0)>since);
   let pohw=null;try{pohw=window.nd6PohwPack?nd6PohwPack():null;if(pohw&&since&&pohw.cases){const c={};for(const id in pohw.cases){const x=pohw.cases[id];if(((x&&x.savedAt)||0)>since)c[id]=x}pohw.cases=c}}catch(e){}
-  const d=dev();
-  return {app:'NotingDesk',v:4,saved:new Date().toISOString(),pdfs:withPdf,
+  const d=dev();let members=null;try{members=window.NDMEM?await NDMEM.pack(since):null}catch(e){console.warn('members',e)}
+  return {app:'NotingDesk',v:4,members,saved:new Date().toISOString(),pdfs:withPdf,
     sync:{from:d.name,dev:d.id,since,kind:opt.kind||'file'},
     history,cfg:CFG,learned:(typeof LD!=='undefined'?LD:null),diary,circ:{uc,ovr},ord,mail,spt,deleted:DEL,
     nd2:{cfg:ND2,used:NDUSE,ui:(window.NDUI?NDUI.get():null)},pins:PIN,pohw};
 }
-function count(p){return (p.circ.uc.length+p.ord.length+p.mail.length+p.spt.length+p.history.length+((p.diary&&p.diary.rows.length)||0))}
+function count(p){return (((p.members&&p.members.books)||[]).length+p.circ.uc.length+p.ord.length+p.mail.length+p.spt.length+p.history.length+((p.diary&&p.diary.rows.length)||0))}
 
 /* ---------------- receive (file or QR) ---------------- */
-async function receive(text,name){let j;try{j=JSON.parse(text)}catch(e){say('This is not a Noting Desk sync file');return false}
-  if(!j||(j.app!=='NotingDesk'&&j.app!=='NotingDeskData')){say('This is not a Noting Desk sync or backup file');return false}
+async function receive(text,name){let j;try{j=JSON.parse(text)}catch(e){say('This is not an EPFO Desk sync file');return false}
+  if(!j||(j.app!=='NotingDesk'&&j.app!=='NotingDeskData')){say('This is not an EPFO Desk sync or backup file');return false}
   await ndRestore(new File([text],name||'sync.json',{type:'application/json'}));
   dyStamp();lastSet({recv:Date.now(),from:(j.sync&&j.sync.from)||'backup file',fromSaved:j.saved||''});return true}
 
 /* ---------------- 1. pen-drive file ---------------- */
 async function fileOut(){const pdf=!!(q('#nsPdf')&&q('#nsPdf').checked);say('Preparing the sync file…');
   try{const p=await build({pdf,kind:'file'});const blob=new Blob([JSON.stringify(p)],{type:'application/json'});
-    const nm=`NotingDesk_sync_${dev().name.replace(/[^A-Za-z0-9]+/g,'')}_${stamp(new Date())}.json`;
+    const nm=`EPFODesk_sync_${dev().name.replace(/[^A-Za-z0-9]+/g,'')}_${stamp(new Date())}.json`;
     saveBlob(blob,nm);lastSet({sent:Date.now()});
     say(`Sync file ready (${mb(blob.size)}) – ${IOS?'choose “Save to Files” and pick the pen drive':'save it on the pen drive'}`)}
   catch(e){console.error(e);alert('Could not make the sync file: '+(e.message||e))}}
@@ -176,7 +176,7 @@ function draw(){const p=q('#nsPanel');if(!p||!q('#nsMask').classList.contains('o
   p.innerHTML=`<div class="ns-top"><div class="ns-grab"></div><h3 id="nsTitle">🔄 Sync with ${h(other)}<button class="btn" type="button" id="nsX" aria-label="Close">✕</button></h3>
     <div class="ns-st">This device: <span class="ns-dev"><input type="text" id="nsName" value="${h(d.name)}" maxlength="20" aria-label="Name of this device"></span> · last sent <b>${h(when(L.sent))}</b> · last received <b>${h(when(L.recv))}</b>${L.from?` from ${h(L.from)}`:''}</div></div>
   <div class="ns-card"><h4>💾 Pen-drive sync file</h4>
-    <p>Makes one file with everything on this device. Open it on the other device with <b>Open sync file</b> – it is <b>added</b> to what is there: the newer edit wins and deleted items stay deleted. Old backup files (<code>NotingDesk_backup_*.json</code>) can be opened here too.</p>
+    <p>Makes one file with everything on this device, including your Excel data. Open it on the other device with <b>Open sync file</b> – it is <b>added</b> to what is there: the newer edit wins and deleted items stay deleted. Old backup files (<code>NotingDesk_backup_*.json</code>) can be opened here too.</p>
     <label class="ns-chk"><input type="checkbox" id="nsPdf"> Include the PDFs and attachments <small style="font-weight:400;color:var(--muted)">(bigger file)</small></label>
     <div class="ns-row"><button class="btn pri" type="button" id="nsFileOut">⬇ Create sync file</button><button class="btn" type="button" id="nsFileIn">⬆ Open sync / backup file</button></div></div>
   <div class="ns-card"><h4>📱 QR quick sync</h4>
@@ -186,7 +186,7 @@ function draw(){const p=q('#nsPanel');if(!p||!q('#nsMask').classList.contains('o
     <div class="ns-row"><button class="btn pri" type="button" id="nsQrGo">📤 Show QR codes</button><button class="btn" type="button" id="nsScan">📷 Scan QR codes</button></div>
     <div id="nsQrOut" hidden></div><div id="nsQrIn" hidden></div></div>
   ${WEB?`<div class="ns-card"><h4>🖥️ Copy for the office PC</h4><p>Saves this same app as <b>Noting_Desk.html</b> (about 14 MB) – put it on the pen drive and use it on the office PC instead of the old file. It works without internet. Version <b>${h(window.ND_APP_VER||'')}</b>.</p>
-    <div class="ns-row"><button class="btn" type="button" id="nsPc">💾 Save Noting_Desk.html</button></div></div>`:`<div class="ns-card"><h4>ℹ️ Version</h4><p>Noting Desk ${h(window.ND_APP_VER||'')} with iPhone sync. Your data on this PC is kept in this browser – keep making backups as before.</p></div>`}`;
+    <div class="ns-row"><button class="btn" type="button" id="nsPc">💾 Save Noting_Desk.html</button></div></div>`:`<div class="ns-card"><h4>ℹ️ Version</h4><p>EPFO Desk ${h(window.ND_APP_VER||'')} with iPhone sync. Your data on this PC is kept in this browser – keep making backups as before.</p></div>`}`;
   q('#nsX').onclick=close;q('#nsFileOut').onclick=fileOut;q('#nsFileIn').onclick=fileIn;q('#nsQrGo').onclick=qrOut;q('#nsScan').onclick=()=>{qrStop();qrIn()};
   if(q('#nsPc'))q('#nsPc').onclick=pcCopy;
   q('#nsName').onchange=e=>{const d=dev();d.name=(e.target.value||'').trim().slice(0,20)||d.name;lsSet(LS.dev,d);draw()}}
@@ -195,7 +195,7 @@ function close(){qrStop();camStop();const m=q('#nsMask');if(m)m.classList.remove
 
 /* ---------------- the Sync button ---------------- */
 function button(){const rail=q('#rail');if(!rail||q('#mSync'))return;const b=document.createElement('button');b.id='mSync';b.type='button';b.title='Sync with iPhone / PC – pen drive or QR codes';
-  b.innerHTML='<i>🔄</i><span>Sync</span>';b.onclick=open;const sp=q('#rail .sp');rail.insertBefore(b,sp?sp.nextSibling:null)}
+  b.innerHTML='<i>🔄</i><span>Sync</span><b class="d6t">Sync with iPhone / PC</b>';b.onclick=open;const sp=q('#rail .sp');rail.insertBefore(b,sp?sp.nextSibling:null)}
 function boot(){button();
   /* the global search / command list also opens it */
   try{if(Array.isArray(window.NDCMDS))NDCMDS.push(['🔄','Sync','pen drive or QR codes with the iPhone / PC','sync iphone phone pc qr pendrive pen drive transfer',open])}catch(e){}}

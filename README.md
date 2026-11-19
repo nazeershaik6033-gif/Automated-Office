@@ -1,13 +1,15 @@
-# Noting Desk – iPhone app + office PC, synced offline
+# EPFO Desk – iPhone app + office PC, synced offline
 
-Noting Desk is the offline office tool for notings, circulars and manuals, office orders, e-mails and replies, the work diary, the IBB calculator, history, sports calendar, Member ID and rejection reasons, and learned templates.
+<img src="docs/icons/icon-192.png" width="96" alt="EPFO Desk logo">
+
+EPFO Desk (formerly Noting Desk) is the offline office tool for **member search across your Excel sheets**, notings, circulars and manuals, office orders, e-mails and replies, the work diary, the IBB calculator, history, sports calendar, Member ID and rejection reasons, and learned templates.
 
 This repository turns it into:
 
 | | What | Where |
 |---|---|---|
-| 📱 **iPhone app** | Installs from Safari to the Home Screen and then runs **fully offline**. Every module is included, with a phone layout: 4 main tabs, a **More** sheet with all tools, dark mode and share-to-Files. | `docs/index.html`, served by GitHub Pages |
-| 🖥️ **Office PC file** | The same `Noting_Desk.html` you use today, plus a **🔄 Sync** button. Nothing else changes. | `docs/Noting_Desk.html` (or **Sync ▸ Save Noting_Desk.html** inside the iPhone app) |
+| 📱 **iPhone app** | Installs from Safari to the Home Screen and then runs **fully offline**. Every module is included, with a phone layout: main tabs (Draft, Members, E-mails, Circulars, Diary), a **More** sheet with all tools, dark mode and share-to-Files. | `docs/index.html`, served by GitHub Pages |
+| 🖥️ **Office PC file** | The same `Noting_Desk.html` you use today, plus **👥 Members** and a **🔄 Sync** button. The file name stays the same. | `docs/Noting_Desk.html` (or **Sync ▸ Save Noting_Desk.html** inside the iPhone app) |
 
 The office PC needs **no internet**. Your data never goes to GitHub or any server; it stays in the PC's browser and on the iPhone. GitHub only hosts the app code.
 
@@ -23,7 +25,7 @@ The office PC needs **no internet**. Your data never goes to GitHub or any serve
 
 1. Open the link **in Safari**. Other browsers on iPhone cannot install apps.
 2. Tap **Share ⬆︎ ▸ Add to Home Screen ▸ Add**.
-3. Open **Noting Desk** from the Home Screen once while you're online. From then on it works with no internet at all.
+3. Open **EPFO Desk** from the Home Screen once while you're online. From then on it works with no internet at all.
 4. To bring your existing data in, tap **More ▸ 🔄 Sync ▸ Open sync / backup file** and pick a `NotingDesk_backup_*.json` or a sync file from Files or your pen drive.
 
 Updates: when a new version is published, the app shows **"A new version is ready – Update now"** the next time it's opened online.
@@ -37,7 +39,28 @@ Updates: when a new version is published, the app shows **"A new version is read
 
 PoHW Desk (`PoHW_Desk.html`) stays as a separate file on the PC. Its cases still travel inside the sync file.
 
-## 4. Sync (both directions, no internet)
+## 4. Members – search your Excel sheets
+
+Open **👥 Members** and type a member number:
+
+| You type | It finds |
+|---|---|
+| `787` | `APHYD/4566/787`, using the default establishment, which you can change under *Excel files* |
+| `4566/787`, `APHYD/4566/787`, `APHYD00045660000000787`, `AP/HYD/0004566/000/0000787` | the same member |
+| a UAN or an ACK No | the member it belongs to |
+| a name, e.g. `prabhakar` | a list of matching names |
+
+The top card shows the profile: name, both ID formats (tap to copy), UAN, ACK No, PPO, status, demand and DD details. A **⚠ differs** mark appears when two sheets disagree, e.g. a DD amount. Below the card is every matching row from every sheet. Sheets without a member column, such as **UO NOTE**, are linked through the UAN or ACK No.
+
+**Excel stays the master.** The app only reads your files and never changes them.
+
+- **Office PC (automatic):** connect your Noting Desk folder once (top bar **Connect folder**). Then put the `.xlsx` files in the **Excel Data** folder inside it, which is created for you. When you save a change in Excel, EPFO Desk re-reads that file within a minute, and whenever you switch back to it. Removing a file from the folder removes it from the app.
+- **PC or iPhone (by hand):** **Members ▸ Excel files ▸ Add / refresh Excel**. Pick the file again after editing it.
+- **To the iPhone:** the Excel data travels inside the sync file, the QR sync and the normal backup.
+
+Your Excel files contain member data. Never put them in this GitHub repository; `.gitignore` blocks `*.xlsx`.
+
+## 5. Sync (both directions, no internet)
 
 Open **🔄 Sync**. On the PC it's in the left bar; on the iPhone it's under **More**.
 
@@ -66,12 +89,14 @@ Open **🔄 Sync**. On the PC it's in the left bar; on the iPhone it's under **M
 
 ```
 src/Noting_Desk_base.html   original Noting Desk (unchanged)
+src/addon/nd-members.js     Members tab: Excel import, member-ID matching, profile, Excel Data folder watch
 src/addon/nd-sync.js        Sync panel: pen-drive file + QR send/scan (uses ndPack/ndMerge/ndRestore)
 src/addon/nd-pwa.js         iPhone layer: service worker, share-sheet saving, More sheet, install hint
 src/addon/nd-mobile.css     premium phone layout (safe areas, frosted bars, 16px inputs on iOS)
 src/vendor/                 qrcode-generator 1.4.4 (MIT), jsQR 1.4.0 (Apache-2.0) – embedded for offline use
 src/sw.template.js          offline cache (version stamped per build)
-tools/make_icons.py         draws the app icons
+src/brand/logo_source.png   the EPFO Desk logo
+tools/make_icons.py         makes the app icons from the logo
 build.py                    builds docs/ (index.html, Noting_Desk.html, sw.js, manifest)
 ```
 
