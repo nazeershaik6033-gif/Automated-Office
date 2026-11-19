@@ -44,6 +44,8 @@ tail = (
     f'<script id="nd-vendor-jsqr">/* jsQR 1.4.0 · Apache-2.0 · Cosmo Wolfe */\n{js(rd("vendor/jsQR.js"))}\n</script>\n'
     f'<script id="nd-pwa-js">window.ND_APP_VER={json.dumps(ver)};window.ND_LOGO={json.dumps(logo)};\n{js(rd("addon/nd-pwa.js"))}</script>\n'
     f'<script id="nd-reader-js">\n{js(rd("addon/nd-reader.js"))}</script>\n'
+    f'<script id="nd-heic-js">\n{js(rd("addon/nd-heic.js"))}</script>\n'
+    f'<script type="text/plain" id="nd-heic-lib">/* libheif-js 1.19.8 · LGPL-3.0 · https://github.com/catdad-experiments/libheif-js – replaceable: put another build of libheif-bundle.js here */\n{js(rd("vendor/libheif-bundle.js"))}</script>\n'
     f'<script id="nd-members-js">\n{js(rd("addon/nd-members.js"))}</script>\n'
     f'<script id="nd-model">window.ND_MODEL={rd("addon/nd-model.json")};</script>\n'
     f'<script id="nd-learn-js">\n{js(rd("addon/nd-learn.js"))}</script>\n'

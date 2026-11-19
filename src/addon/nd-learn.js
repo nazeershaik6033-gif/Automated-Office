@@ -35,6 +35,11 @@ function knn(text,skip){if(!IDX)build();const cnt=new Map();for(const w of toks(
   if(!cnt.size)return{};let n=0;const q=new Map();for(const [w,c] of cnt){const x=(1+Math.log(c))*IDX.idf.get(w);q.set(w,x);n+=x*x}n=Math.sqrt(n)||1;
   const sims=[];IDX.docs.forEach((d,i)=>{if(skip!=null&&d.src==='model'&&d.i===skip)return;let s=0;for(const [w,x] of q){const y=d.v.get(w);if(y)s+=x*y}sims.push([s/n,d.c])});
   sims.sort((a,b)=>b[0]-a[0]);const out={};for(const [s,c] of sims.slice(0,M.k||5))out[c]=(out[c]||0)+s;return out}
+/* sharper keyword rules learned from real letters */
+try{
+  QDET.jd_eps=[[/\beps\b/i,2],[/\b58\s*(?:years?|yrs)\b|attain(?:ed|ing)\s+58|superannuat/i,2],[/remov|wrongly marked/i,2]];
+  QDET.ob_adj=(QDET.ob_adj||[]).concat([[/divers?ion\s+(?:of\s+)?(?:\w+\s+){0,3}(?:EPS|EPF|pension|contribution)|(?:EPS|pension)\s+(?:contributions?|amounts?|credits?|entries)\s+(?:were\s+)?(?:posted|paid|remitted|credited)\s+(?:wrongly|erroneously|instead)|instead\s+of\s+(?:EPF|EPS|PF)\b|erroneous\s+(?:EPS|pension|contribution)|rectif\w+\s+of\s+(?:erroneous\s+)?(?:EPS|pension)|reallocat/i,4],[/\beps\b/i,1]]);
+}catch(e){}
 const DEATH_ONLY=['tr_death','tr_email','dc_office','dc_note','dc_letter','dc_pdf','dc_reject_letter','dc_eo_note','dc_check'];
 const _qd=qDetect;
 qDetect=function(text){const base=_qd.apply(this,arguments);let nn={};try{nn=knn(text,window.__ndLOO)}catch(e){console.warn('learn',e)}
@@ -81,6 +86,25 @@ function facts(t,F,src){let m;const set=(k,v,how)=>{v=String(v||'').trim().repla
   if((m=svc.exec(t))){const est=m[1].replace(/\s*\($/,'').replace(/^(?:M\/s\.?\s*)/i,'').trim();if(est&&!/^(?:the|this|our)\b/i.test(est)&&est.length<80)set('estName',est);
     const d1=normDate(m[3]);if(d1){F.doj=d1;src.doj='pattern'}const d2=m[4]&&normDate(m[4]);if(d2){F.doe=d2;src.doe='pattern'}}
   else if((m=/\bM\/s\.?\s+([A-Z][^\n()]{2,90}?)\s+(?:with\s+(?:pf|PF|EPF|establishment|effect)|bearing|having|vide|from\s+\d|\(|,)/.exec(t))){const est=m[1].trim();if(!F.estName||(est.length>F.estName.length&&est.toUpperCase().startsWith(F.estName.toUpperCase().slice(0,6))))set('estName',est)}
+  /* "the employee / member joined <estb> on <date>" */
+  if(!src.doj||src.doj!=='label'){const jn=new RegExp('\\b(?:employee|member|he|she)\\s+(?:has\\s+)?(?:joined|was\\s+appointed\\s+in|was\\s+employed\\s+(?:in|with))\\s+(?:in\\s+|with\\s+|at\\s+)?(?:the\\s+)?(?:establishment\\s+)?(?:M\\/s\\.?\\s*)?([A-Z][^\\n]{2,80}?)\\s+(?:on|w\\.?e\\.?f\\.?|from|with\\s+effect\\s+from)\\s+'+DT,'i').exec(t);
+    if(jn){const d=normDate(jn[2]);if(d){F.doj=d;src.doj='pattern'}const est=jn[1].replace(/[.,]$/,'').trim();if(est&&(!F.estName||src.estName!=='label'))set('estName',est)}}
+  /* employer letterhead: a line in capitals ending in PVT LTD / LIMITED / LLP */
+  if(!F.estName){const lh=/^\s*(?:M\/s\.?\s*)?([A-Z0-9&.,' ()-]{4,70}?\b(?:PVT\.?\s*LTD\.?|PRIVATE\s+LIMITED|LIMITED|LTD\.?|LLP|CORPORATION|INDUSTRIES|SERVICES))\s*$/m.exec(t);if(lh)set('estName',lh[1].trim())}
+  /* letter date written as "Date: 10/09/2026" (also "te: 10/09/2026" when the scan cuts the edge) */
+  if(!F.ld&&(m=new RegExp('^\\s*(?:Da)?te[d]?\\s*[:.]\\s*'+DT,'im').exec(t))){const d=normDate(m[1]);if(d)set('ld',d)}
+  /* OB adjustment: which kind of diversion (matches the template's case types) */
+  if(!F.ctype&&typeof CT!=='undefined'){const c=
+      /rejoin/i.test(t)?5:/arrear/i.test(t)?4:
+      /wage\s*ceiling|EPS\s+wages?\s+(?:correct|exceed|above)/i.test(t)&&/\b58\b/.test(t)?3:
+      /instead\s+of\s+EPF|not\s+eligible\s+for\s+(?:EPS|pension)|no\s+EPS\s+wages|already\s+an?\s+EPF\s+member|excluded\s+employee|EPS\s+to\s+EPF|(?:from|out\s+of)\s+EPS\s+(?:to|into)\s+(?:EPF|ER|employer)/i.test(t)?2:
+      /instead\s+of\s+EPS|EPF\s+to\s+EPS|eligible\s+for\s+EPS\s+membership|EPS\s+contributions?\s+not\s+(?:received|remitted|paid)/i.test(t)?1:
+      /(?:after|crossed|attaining|attained)\s+(?:the\s+age\s+of\s+)?58|\b58\s*(?:years|yrs)/i.test(t)?0:-1;
+    if(c>=0)set('ctype',CT[c])}
+  /* period: "during the period February 2018 to August 2018" / "from 09/2014 to 10/2024" */
+  if(!F.period){const MY='((?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)[a-z]*[\\s,.-]*\\d{4}|\\d{1,2}\\/\\d{4}|\\d{1,2}[./-]\\d{1,2}[./-]\\d{4})';
+    const pm=new RegExp('\\b(?:during|for|in)\\s+the\\s+period\\s+(?:from\\s+)?'+MY+'\\s+(?:to|till|upto|up\\s+to|-|–)\\s+'+MY,'i').exec(t)||new RegExp('\\b(?:EPS|pension)\\b[^.\\n]{0,80}?\\bfrom\\s+'+MY+'\\s+(?:to|till|upto)\\s+'+MY,'i').exec(t);
+    if(pm)set('period',pm[1].replace(/\s+/g,' ')+' to '+pm[2].replace(/\s+/g,' '))}
   /* name after "in r/o" (also "Late X", no Sri/Smt) */
   if(!F.name||src.name!=='label'){const rn=new RegExp('\\b(?:in\\s+r\\/o|in\\s+respect\\s+of|r\\/o)\\s+(?:the\\s+)?(?:member\\s+|pensioner\\s+|deceased\\s+member\\s+)?(Late\\s+)?'+SAL+'?'+NM).exec(t);
     if(rn){let n=rn[2].replace(/\s+(?:bearing|having|with|for|who|is|has|vide|regarding|towards|along|placed|received|PF|UAN)\b.*$/,'').trim();
@@ -97,7 +121,7 @@ function fillXl(F,src){if(!window.NDMEM||!NDMEM.books||!NDMEM.books.length)retur
   put('name',f['Name']&&f['Name'].replace(/^(?:shri|sri|smt|mr|mrs|ms)\.?\s+/i,''));put('uan',f['UAN']);put('ppo',f['PPO No']);put('ack',f['ACK No']);
   put('dd',f['DD / cheque no']);put('ddd',f['DD / cheque date']);if(f['DD amount (Rs)'])F.__ddAmt=String(f['DD amount (Rs)']).replace(/[^\d.]/g,'');
   if(!F.pf&&p.id){F.pf=p.id.short;src.pf='excel'}F.__xl=p.rows}
-try{Object.assign(QALIAS,{ack:QALIAS.ack||['ack'],dd:QALIAS.dd||['dd'],ddd:QALIAS.ddd||['ddd']})}catch(e){}
+try{Object.assign(QALIAS,{ack:QALIAS.ack||['ack'],dd:QALIAS.dd||['dd'],ddd:QALIAS.ddd||['ddd'],ctype:QALIAS.ctype||['ctype'],period:QALIAS.period||['period']})}catch(e){}
 if(typeof qApply==='function'){const _qa=qApply;qApply=function(F){try{if(F&&F.__ddAmt&&!F.amt&&cur&&/^pohw/.test(cur.id))F.amt=F.__ddAmt}catch(e){}return _qa.apply(this,arguments)}}
 
 /* ---------------- learn from a batch of Word notings ---------------- */

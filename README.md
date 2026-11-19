@@ -70,6 +70,10 @@ Your Excel files contain member data. Never put them in this GitHub repository; 
 | PF, UAN, dates, IDs read exactly right | 50% | 86% |
 | clean scans | 100% | 100% (unchanged) |
 
+**iPhone photos (HEIC).** iPhones save photos as HEIC, which Chrome and Edge on Windows can't open. Every HEIC photo is now converted to JPEG offline the moment you pick or drop it (libheif, embedded). This works on the PC too, for example for a photo copied over by pen drive.
+
+*Real test:* an employer letter photographed on an iPhone (HEIC, 12 MP), "rectification of erroneous EPS contribution". It was read and drafted in about 10 seconds on the PC as **OB adjustment through Appendix-E – EPS to ER share (member not eligible for EPS)**, with name, UAN, establishment, date of joining and the period February 2018 to August 2018 filled in.
+
 **Choosing the right noting.** The keyword rules are now combined with *"which of your own past notings is this most like"*. This was trained on 159 of your notings across 40 types. Each noting was tested against a model that hadn't seen it:
 
 | | before | now |
@@ -123,6 +127,7 @@ Open **🔄 Sync**. On the PC it's in the left bar; on the iPhone it's under **M
 src/Noting_Desk_base.html   original Noting Desk (unchanged)
 src/addon/nd-members.js     Members tab: Excel import, member-ID matching, profile, Excel Data folder watch
 src/addon/nd-reader.js      offline reader: image clean-up, deskew, EPFO number repair, PDF reading order
+src/addon/nd-heic.js        iPhone HEIC photos → JPEG (offline, libheif 1.19.8 LGPL-3.0 in src/vendor)
 src/addon/nd-learn.js       template choice from your notings, PF/name/service extraction, Excel fill, learning
 src/addon/nd-model.json     the learned model (generic EPFO words only; built by tools/build_model.py)
 src/addon/nd-sync.js        Sync panel: pen-drive file + QR send/scan (uses ndPack/ndMerge/ndRestore)

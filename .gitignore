@@ -7,3 +7,6 @@ __pycache__/
 *.xlsx
 *.xls
 *.csv
+*.heic
+*.HEIC
+*.heif
