@@ -43,6 +43,7 @@ tail = (
     f'<script id="nd-vendor-qrcode">/* qrcode-generator 1.4.4 · MIT · Kazuhiko Arase */\n{js(rd("vendor/qrcode.js"))}\n</script>\n'
     f'<script id="nd-vendor-jsqr">/* jsQR 1.4.0 · Apache-2.0 · Cosmo Wolfe */\n{js(rd("vendor/jsQR.js"))}\n</script>\n'
     f'<script id="nd-pwa-js">window.ND_APP_VER={json.dumps(ver)};window.ND_LOGO={json.dumps(logo)};\n{js(rd("addon/nd-pwa.js"))}</script>\n'
+    f'<script id="nd-reader-js">\n{js(rd("addon/nd-reader.js"))}</script>\n'
     f'<script id="nd-members-js">\n{js(rd("addon/nd-members.js"))}</script>\n'
     f'<script id="nd-sync-js">\n{js(rd("addon/nd-sync.js"))}</script>\n'
 )

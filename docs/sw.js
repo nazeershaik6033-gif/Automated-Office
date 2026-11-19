@@ -1,6 +1,6 @@
 /* EPFO Desk service worker – keeps the whole app on the phone so it opens without internet.
-   Version 2026.11.19-0941 (changes on every build, which is how the phone learns about an update). */
-const CACHE = 'noting-desk-2026.11.19-0941';
+   Version 2026.11.19-1032 (changes on every build, which is how the phone learns about an update). */
+const CACHE = 'noting-desk-2026.11.19-1032';
 const ASSETS = ['./', './index.html', './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/icon-maskable-512.png', './icons/apple-touch-icon.png', './icons/logo-64.png'];
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS.map(u => new Request(u, { cache: 'reload' })))));
