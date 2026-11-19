@@ -270,5 +270,8 @@ async function boot(){view();tab();hook();
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)scanFolder(false)});
   window.addEventListener('focus',()=>scanFolder(false))}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot);else boot();
-window.NDMEM={pick,search,pack,merge,importFile,scanFolder,reindex,get books(){return BOOKS},resolve,memKey};
+/* profile of one member for auto-fill: {key, id:{short,full}, f:{label:value}} or null */
+function lookup(qs){if(!IX)reindex();if(!BOOKS.length||!qs)return null;const r=resolve(qs);if(!r||!r.key||r.list)return null;const rows=rowsFor(r.key);if(!rows.length)return null;
+  const f={};for(const x of profile(r.key,rows))f[x.lab]=x.v;return{key:r.key,id:r.key[0]==='?'?null:fmtId(r.key,IX.regs.get(r.key)),f,rows:rows.length}}
+window.NDMEM={pick,search,pack,merge,importFile,scanFolder,reindex,get books(){return BOOKS},resolve,memKey,lookup};
 })();

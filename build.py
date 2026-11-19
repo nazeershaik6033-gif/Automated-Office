@@ -45,6 +45,8 @@ tail = (
     f'<script id="nd-pwa-js">window.ND_APP_VER={json.dumps(ver)};window.ND_LOGO={json.dumps(logo)};\n{js(rd("addon/nd-pwa.js"))}</script>\n'
     f'<script id="nd-reader-js">\n{js(rd("addon/nd-reader.js"))}</script>\n'
     f'<script id="nd-members-js">\n{js(rd("addon/nd-members.js"))}</script>\n'
+    f'<script id="nd-model">window.ND_MODEL={rd("addon/nd-model.json")};</script>\n'
+    f'<script id="nd-learn-js">\n{js(rd("addon/nd-learn.js"))}</script>\n'
     f'<script id="nd-sync-js">\n{js(rd("addon/nd-sync.js"))}</script>\n'
 )
 html = html.replace('</body>', tail + '</body>')

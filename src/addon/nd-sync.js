@@ -45,7 +45,8 @@ async function build(opt){opt=opt||{};const since=+opt.since||0,withPdf=!!opt.pd
   const ovr=Object.values(CS.ovr||{}).filter(o=>!since||(o.mod||0)>since);
   let pohw=null;try{pohw=window.nd6PohwPack?nd6PohwPack():null;if(pohw&&since&&pohw.cases){const c={};for(const id in pohw.cases){const x=pohw.cases[id];if(((x&&x.savedAt)||0)>since)c[id]=x}pohw.cases=c}}catch(e){}
   const d=dev();let members=null;try{members=window.NDMEM?await NDMEM.pack(since):null}catch(e){console.warn('members',e)}
-  return {app:'NotingDesk',v:4,members,saved:new Date().toISOString(),pdfs:withPdf,
+  let learnDocs=null;try{learnDocs=window.NDLEARN?NDLEARN.pack(since):null}catch(e){}
+  return {app:'NotingDesk',v:4,members,learnDocs,saved:new Date().toISOString(),pdfs:withPdf,
     sync:{from:d.name,dev:d.id,since,kind:opt.kind||'file'},
     history,cfg:CFG,learned:(typeof LD!=='undefined'?LD:null),diary,circ:{uc,ovr},ord,mail,spt,deleted:DEL,
     nd2:{cfg:ND2,used:NDUSE,ui:(window.NDUI?NDUI.get():null)},pins:PIN,pohw};

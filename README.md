@@ -60,7 +60,39 @@ The top card shows the profile: name, both ID formats (tap to copy), UAN, ACK No
 
 Your Excel files contain member data. Never put them in this GitHub repository; `.gitignore` blocks `*.xlsx`.
 
-## 5. Sync (both directions, no internet)
+## 5. Reading letters and writing notings
+
+**Reader (offline OCR, PC and iPhone).** Phone photos and scans are cleaned up before reading: small photos are upscaled properly, shadows are removed and tilted pages are straightened. Afterwards, PF / UAN / ACK / PPO numbers, dates and amounts are repaired, since letters such as O/0, I/1 and S/5 are confused but EPFO numbers have fixed shapes. Scanned PDF pages are read at about 300 dpi. Digital PDFs keep their own text, now in reading order.
+
+| Tested on blurred, tilted, shadowed phone photos of letters | before | now |
+|---|---|---|
+| characters read wrong | 38% | 3% |
+| PF, UAN, dates, IDs read exactly right | 50% | 86% |
+| clean scans | 100% | 100% (unchanged) |
+
+**Choosing the right noting.** The keyword rules are now combined with *"which of your own past notings is this most like"*. This was trained on 159 of your notings across 40 types. Each noting was tested against a model that hadn't seen it:
+
+| | before | now |
+|---|---|---|
+| right template first time | 51% | 85% |
+| right template among the top three | 82% | 94% |
+| member's own PF a/c number found | 70% | 88% |
+
+**Filling it.** Several details are now picked up:
+- The member's own PF a/c, preferred over transfer-in or previous accounts.
+- The name after "in r/o" (including "Late …").
+- The establishment and the member's own "from … to …" service.
+- The reason for exit and the date of death.
+- When the PF a/c or UAN is in your **Members** Excel data, the name, UAN, PPO, ACK No and DD no / date / amount are filled from there.
+
+**It keeps learning.**
+- Every noting you save becomes one more example for its type.
+- **Learned ▸ 📚 Learn from Word notings** reads a batch of `.docx` files: each noting inside is recognised and remembered.
+- These examples travel to the iPhone with the sync file.
+
+The built-in model (`src/addon/nd-model.json`) holds **generic EPFO words only**. A word is kept only if it appears in the public EPFO manuals inside the app, is never part of a person's or company's name, has no digits, and occurs in at least two notings. Your notings themselves are never stored in this repository.
+
+## 6. Sync (both directions, no internet)
 
 Open **🔄 Sync**. On the PC it's in the left bar; on the iPhone it's under **More**.
 
@@ -90,6 +122,9 @@ Open **🔄 Sync**. On the PC it's in the left bar; on the iPhone it's under **M
 ```
 src/Noting_Desk_base.html   original Noting Desk (unchanged)
 src/addon/nd-members.js     Members tab: Excel import, member-ID matching, profile, Excel Data folder watch
+src/addon/nd-reader.js      offline reader: image clean-up, deskew, EPFO number repair, PDF reading order
+src/addon/nd-learn.js       template choice from your notings, PF/name/service extraction, Excel fill, learning
+src/addon/nd-model.json     the learned model (generic EPFO words only; built by tools/build_model.py)
 src/addon/nd-sync.js        Sync panel: pen-drive file + QR send/scan (uses ndPack/ndMerge/ndRestore)
 src/addon/nd-pwa.js         iPhone layer: service worker, share-sheet saving, More sheet, install hint
 src/addon/nd-mobile.css     premium phone layout (safe areas, frosted bars, 16px inputs on iOS)
