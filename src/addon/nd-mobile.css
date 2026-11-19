@@ -1,0 +1,60 @@
+/* =====================================================================
+   NOTING DESK · PREMIUM PHONE LAYOUT (iPhone first, any width ≤ 900px)
+   ===================================================================== */
+/* shared: sheets and bars used by the app layer and sync panel */
+.nd-sheetmask{position:fixed;inset:0;z-index:230;background:rgba(10,16,28,.45);display:none;align-items:flex-end;justify-content:center;-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px)}
+.nd-sheetmask.on{display:flex}
+.nd-sheet{background:var(--bg,#f3f1ec);color:var(--ink,#1d2433);width:100%;max-width:560px;border-radius:22px 22px 0 0;padding:8px 16px calc(16px + env(safe-area-inset-bottom));box-shadow:0 -10px 40px rgba(0,0,0,.25);animation:ndUp .22s ease-out;max-height:88vh;overflow:auto}
+@media(min-width:760px){.nd-sheetmask{align-items:center}.nd-sheet{border-radius:18px}}
+@keyframes ndUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.nd-grab{width:40px;height:5px;border-radius:3px;background:var(--line,#ccc);margin:2px auto 10px}
+.nd-sheet h3{margin:0 0 10px;font-size:19px;letter-spacing:-.2px}
+.nd-sheet .hint{text-align:center;font-size:12.5px;color:var(--muted,#667);margin:12px 0 0}
+.nd-fn{font-size:13.5px;color:var(--muted,#667);word-break:break-all;margin:0 0 12px}
+.nd-big{display:block;width:100%;min-height:48px;margin:0 0 8px;font-size:16px!important;border-radius:12px!important}
+.nd-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.nd-tile{position:relative;border:1px solid var(--line,#ddd);background:var(--panel,#fff);color:var(--ink,#1d2433);border-radius:16px;padding:12px 4px 10px;display:flex;flex-direction:column;align-items:center;gap:6px;font:600 12px/1.15 inherit;font-family:inherit;cursor:pointer;min-height:78px}
+.nd-tile i{font-style:normal;font-size:26px;line-height:1}
+.nd-tile.on{border-color:var(--accent,#1f4e79);box-shadow:0 0 0 2px color-mix(in srgb,var(--accent,#1f4e79) 30%,transparent)}
+.nd-tile em{position:absolute;top:6px;right:6px;font-style:normal;background:var(--accent,#1f4e79);color:#fff;border-radius:9px;font-size:10.5px;line-height:17px;min-width:17px;padding:0 5px}
+.nd-tile:active{transform:scale(.96)}
+.nd-bar{position:fixed;left:10px;right:10px;bottom:calc(84px + env(safe-area-inset-bottom));z-index:205;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:var(--panel,#fff);color:var(--ink,#1d2433);border:1px solid var(--line,#ddd);border-radius:16px;padding:10px 12px;box-shadow:0 10px 30px rgba(0,0,0,.18);font-size:14px;max-width:560px;margin:0 auto}
+.nd-bar span{flex:1;min-width:180px}
+@media(min-width:901px){.nd-bar{bottom:20px}}
+#ndMore{display:none}
+
+@media (max-width:900px){
+  html,body{-webkit-tap-highlight-color:transparent}
+  body.nd2{overscroll-behavior-y:none}
+  /* bottom bar: four main tabs + More, frosted glass */
+  #rail{padding:6px 8px calc(6px + env(safe-area-inset-bottom))!important;overflow:hidden!important;justify-content:space-around;
+    background:color-mix(in srgb,var(--rail,#141c2b) 90%,transparent)!important;-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px);
+    border-top:1px solid rgba(255,255,255,.08);box-shadow:0 -6px 24px rgba(0,0,0,.18)}
+  #rail button{display:none!important}
+  #rail button.ndm-pri,#rail #ndMore{display:flex!important;flex:1 1 0;min-width:0!important;max-width:110px;padding:6px 2px 4px!important;border-radius:12px}
+  #rail button i{font-size:22px!important}
+  #rail button span{font-size:11px;letter-spacing:.1px}
+  #rail button.on::before{left:30%!important;right:30%!important;top:-6px!important}
+  #rail .d6c{display:none!important}
+  #mainCol{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
+  /* top bar sits under the notch / Dynamic Island */
+  #topbar{padding-top:calc(8px + env(safe-area-inset-top))!important;padding-left:calc(14px + env(safe-area-inset-left))!important;padding-right:calc(14px + env(safe-area-inset-right))!important;
+    background:color-mix(in srgb,var(--panel,#fff) 88%,transparent)!important;-webkit-backdrop-filter:saturate(1.6) blur(18px);backdrop-filter:saturate(1.6) blur(18px)}
+  #vTitle{font-size:22px;letter-spacing:-.3px}
+  #gs{border-radius:12px!important;min-height:42px}
+  /* comfortable touch targets */
+  .btn{min-height:40px;border-radius:10px}
+  .nd-sheet .nd-tiles{grid-template-columns:repeat(4,1fr)}
+  dialog[open]{max-width:100%!important}
+  /* nothing may make the page wider than the phone (long dropdown texts, wide grids) */
+  #views select,#views input,#views textarea{max-width:100%}
+  #mainCol,.view{min-width:0;max-width:100vw}
+}
+@media (max-width:380px){.nd-tiles{grid-template-columns:repeat(3,1fr)!important}}
+/* iOS: 16px text in fields stops Safari from zooming in when typing */
+@supports (-webkit-touch-callout:none){
+  @media (max-width:900px){input:not([type=checkbox]):not([type=radio]),select,textarea{font-size:16px!important}}
+}
+/* Home-Screen app: no rubber-band white flash, keep text from being selected by long-press on bars */
+body.nd-standalone #rail,body.nd-standalone #topbar{-webkit-user-select:none;user-select:none}
+@media print{#ndMore,.nd-bar,.nd-sheetmask,#nsMask{display:none!important}}
